@@ -25,12 +25,25 @@ gh release download "${version}" --repo ${TCE_REPO_URL} --pattern "tce-${OS}-${A
 tar xvzf "${TCE_TAR_BALL}" --directory "${temp_dir}"
 
 if [ "${OS}" == 'darwin' ]; then
-  for binary in "${TCE_INSTALLATION_DIR}"/bin/*; do
-    spctl -vv --type install --asses "${binary}"
-  done
+  pushd "${TCE_INSTALLATION_DIR}" || exit 1
+    # tanzu cli
+    spctl -vv --type install --asses "tanzu"
+
+    # tanzu plugins
+    pushd "./default-local/distribution/darwin/amd64/cli" || exit 1
+        while IFS= read -r -d '' file; do
+            DARWIN_DIRECTORY=$(dirname "${file}")
+            DARWIN_FILENAME=$(basename "${file}")
+
+            pushd "./${DARWIN_DIRECTORY}" || exit 1
+                spctl -vv --type install --asses "${DARWIN_FILENAME}"
+            popd || exit 1
+        done < <(find ./ -type f -print0)
+    popd || exit 1
+  popd || exit 1
 fi
 
-"${TCE_INSTALLATION_DIR}"/install.sh
+"${TCE_INSTALLATION_DIR}/install.sh"
 
 tanzu version
 
@@ -45,8 +58,6 @@ tanzu kubernetes-release version
 tanzu management-cluster version
 
 tanzu package version
-
-tanzu standalone-cluster version
 
 tanzu pinniped-auth version
 

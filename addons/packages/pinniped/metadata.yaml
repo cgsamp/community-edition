@@ -10,5 +10,7 @@ spec:
   maintainers:
     - name: Andrew Keesler
     - name: Ben Petersen
+    - name: Sarah Abbey
   categories:
     - "identity"
+    - "infrastructure"

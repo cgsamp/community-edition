@@ -19,11 +19,13 @@
 # from the root of the TCE repository.
 
 TCE_REPO_PATH="$(git rev-parse --show-toplevel)"
+
 # shellcheck source=test/util/utils.sh
 source "${TCE_REPO_PATH}/test/util/utils.sh"
 # shellcheck source=test/util/aws-nuke-tear-down.sh
 source "${TCE_REPO_PATH}/test/util/aws-nuke-tear-down.sh"
-"${TCE_REPO_PATH}/test/build-tce.sh" || { error "TCE installation failed!"; exit 1; }
+
+"${TCE_REPO_PATH}/test/download-or-build-tce.sh" || { error "TCE installation failed!"; exit 1; }
 "${TCE_REPO_PATH}/test/install-jq.sh"
 "${TCE_REPO_PATH}/test/install-dependencies.sh" || { error "Dependency installation failed!"; exit 1; }
 
@@ -97,7 +99,7 @@ function create_management_cluster {
         delete_management_cluster "Deleting management cluster"
         exit 1
     }
-    kubectl wait --for=condition=ready pod --all --all-namespaces --timeout=300s || {
+    kubectl wait --for=condition=ready pod --all --all-namespaces --timeout=900s || {
         error "TIMED OUT WAITING FOR ALL PODS TO BE UP!"
         collect_management_cluster_diagnostics ${MGMT_CLUSTER_NAME}
         delete_management_cluster "Deleting management cluster"
@@ -129,7 +131,7 @@ function create_workload_cluster {
         delete_management_cluster "Deleting management cluster"
         exit 1
     }
-    kubectl wait --for=condition=ready pod --all --all-namespaces --timeout=300s || {
+    kubectl wait --for=condition=ready pod --all --all-namespaces --timeout=900s || {
         error "TIMED OUT WAITING FOR ALL PODS TO BE UP!"
         collect_management_and_workload_cluster_diagnostics aws ${MGMT_CLUSTER_NAME} ${WLD_CLUSTER_NAME}
         delete_workload_cluster "Deleting workload cluster"

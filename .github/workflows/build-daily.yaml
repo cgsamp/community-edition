@@ -1,10 +1,11 @@
 name: Build - Daily Official Build
 
 on:
+  workflow_dispatch:
   repository_dispatch:
     types: [manual-daily-build]
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "0 9 * * *"
 
 jobs:
   setup-runner:
@@ -19,7 +20,10 @@ jobs:
         id: start-ec2-runner
         shell: bash
         run: |
-          INSTANCE_NAME="id-${GITHUB_RUN_ID}-${GITHUB_RUN_NUMBER}"
+          echo "GITHUB_RUN_ID: ${GITHUB_RUN_ID}"
+          echo "GITHUB_RUN_NUMBER: ${GITHUB_RUN_NUMBER}"
+          echo "GITHUB_RUN_ATTEMPT: ${GITHUB_RUN_ATTEMPT}"
+          INSTANCE_NAME="id-${GITHUB_RUN_ID}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
           echo "INSTANCE_NAME: ${INSTANCE_NAME}"
           echo ::set-output name=ec2-instance-id::${INSTANCE_NAME}
   build-release:
@@ -30,9 +34,9 @@ jobs:
     runs-on: ${{ needs.setup-runner.outputs.ec2-instance-id }} # run the job on the newly created runner
     steps:
       - name: Set up Go 1.x
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: "1.16"
+          go-version: "1.17"
         id: go
       - name: Config git
         env:
@@ -44,11 +48,18 @@ jobs:
           git config --global url."https://git:$GITHUB_TOKEN@github.com".insteadOf "https://github.com"
       - name: Check out code
         uses: actions/checkout@v1
+      - name: Get Date
+        id: get-date
+        shell: bash
+        run: |
+          echo "::set-output name=date::$(date -u "+%Y-%m")"
       - name: Restore Go Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
+        timeout-minutes: 10
+        continue-on-error: true
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ steps.get-date.outputs.date }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Get dependencies
@@ -65,15 +76,21 @@ jobs:
         env:
           GCP_BUCKET_SA: ${{ secrets.GCP_BUCKET_SA }}
           GITHUB_TOKEN: ${{ secrets.GH_RELEASE_ACCESS_TOKEN }}
+          ACTUAL_COMMIT_SHA: ${{ github.sha }}
           TCE_CI_BUILD: true
         shell: bash
         run: |
           make upload-daily-build
+          # daily build
+          TODAY=$(date +%F)
+          echo "TODAY: ${TODAY}"
+          echo ::set-output name=DAILY_BUILD::${TODAY}
       - name: Repository Dispatch
-        uses: peter-evans/repository-dispatch@v1
+        uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.GH_RELEASE_ACCESS_TOKEN }}
           event-type: daily-build
+          client-payload: '{"daily-build": "${{ steps.upload-daily-build-staging.outputs.DAILY_BUILD }}"}'
   teardown-runner:
     name: Stop self-hosted EC2 runner
     # Only run this job if we're in the main repo, not a fork.
@@ -87,5 +104,8 @@ jobs:
         id: stop-ec2-runner
         shell: bash
         run: |
-          INSTANCE_NAME="id-${GITHUB_RUN_ID}-${GITHUB_RUN_NUMBER}"
+          echo "GITHUB_RUN_ID: ${GITHUB_RUN_ID}"
+          echo "GITHUB_RUN_NUMBER: ${GITHUB_RUN_NUMBER}"
+          echo "GITHUB_RUN_ATTEMPT: ${GITHUB_RUN_ATTEMPT}"
+          INSTANCE_NAME="id-${GITHUB_RUN_ID}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
           echo "INSTANCE_NAME: ${INSTANCE_NAME}"

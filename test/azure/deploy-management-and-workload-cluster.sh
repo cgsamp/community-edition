@@ -38,7 +38,7 @@ source "${TCE_REPO_PATH}/test/util/utils.sh"
 source "${TCE_REPO_PATH}/test/azure/utils.sh"
 
 "${TCE_REPO_PATH}/test/install-dependencies.sh" || { error "Dependency installation failed!"; exit 1; }
-"${TCE_REPO_PATH}/test/build-tce.sh" || { error "TCE installation failed!"; exit 1; }
+"${TCE_REPO_PATH}/test/download-or-build-tce.sh" || { error "TCE installation failed!"; exit 1; }
 
 export CLUSTER_NAME_SUFFIX="${RANDOM}"
 export MANAGEMENT_CLUSTER_NAME="test-mc-${CLUSTER_NAME_SUFFIX}"
@@ -60,7 +60,6 @@ function cleanup_management_cluster {
     echo "Using azure CLI to cleanup ${MANAGEMENT_CLUSTER_NAME} management cluster resources"
     export CLUSTER_NAME="${MANAGEMENT_CLUSTER_NAME}"
     set_azure_env_vars
-    delete_kind_cluster
     kubeconfig_cleanup ${CLUSTER_NAME}
     azure_cluster_cleanup || error "MANAGEMENT CLUSTER CLEANUP USING azure CLI FAILED! Please manually delete any ${MANAGEMENT_CLUSTER_NAME} management cluster resources using Azure Web UI"
     unset_azure_env_vars
@@ -289,6 +288,7 @@ kubeconfig_cleanup ${WORKLOAD_CLUSTER_NAME}
 
 delete_management_cluster || {
     collect_management_cluster_diagnostics ${MANAGEMENT_CLUSTER_NAME}
+    delete_kind_cluster
     cleanup_management_cluster
     exit 1
 }

@@ -17,12 +17,27 @@ in the future.
 |:---:|:---:|:---:|:---:|
 |  ❌ |   ❌ | ✅  |  ❌  |
 
+## Mailing lists
+
+* Use [tkg-infrax-akita](mailto:tkg-infrax-akita@groups.vmware.com) to report security concerns to the AKO Team,
+  who uses the list to privately discuss security issues and fixes prior to disclosure.
+
+[comment]: <> (* Join the[AKO Distributors]&#40;mailto:tkg-infrax-akita@groups.vmware.com&#41; mailing list for early private information and vulnerability disclosure.)
+
+[comment]: <> (  Early disclosure may include mitigating steps and additional information on security patch releases.)
+
+[comment]: <> (* Send new membership requests to tkg-infrax-akita@groups.vmware.com.)
+
+[comment]: <> (  In the body of your request please specify how you qualify for)
+
+[comment]: <> (  membership and fulfill each criterion listed in the Membership Criteria section above.)
+
 ## ako-operator integration with Tanzu Community Edition (TCE)
 
 ### Prerequisites
 
 * vSphere is the supported cloud provider for this package. Before proceeding, make sure you have a running management cluster on vSphere
-following the [steps](https://tanzucommunityedition.io/docs/latest/vsphere-intro/). Verify it is running with `tanzu management-cluster get`.
+following the [steps](https://tanzucommunityedition.io/docs/vsphere-intro/). Verify it is running with `tanzu management-cluster get`.
 * Retrieve the context of the management cluster with `tanzu management-cluster kubeconfig get --admin`, and then switch to the context.
 * Install and set up the AVI Controller on the vCenter Server, following the [documentation](https://docs.vmware.com/en/VMware-Tanzu-Kubernetes-Grid/1.4/vmware-tanzu-kubernetes-grid-14/GUID-mgmt-clusters-install-nsx-adv-lb.html#install-avi-controller-on-vcenter-server-7).
 

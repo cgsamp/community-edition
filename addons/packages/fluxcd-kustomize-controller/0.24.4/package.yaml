@@ -1,0 +1,39 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: kustomize-controller.fluxcd.community.tanzu.vmware.com.0.24.4
+spec:
+  refName: kustomize-controller.fluxcd.community.tanzu.vmware.com
+  version: 0.24.4
+  releasedAt: "2022-05-03T11:14:08Z"
+  capacityRequirementsDescription: ""
+  template:
+    spec:
+      fetch:
+        - imgpkgBundle:
+            image: projects.registry.vmware.com/tce/fluxcd-kustomize-controller-bundle@sha256:288c5bae080a994dbb382b904d30f8323b54fe65be3c07837c2bdc8a90c92d2c
+      template:
+        - ytt:
+            paths:
+              - config/
+        - kbld:
+            paths:
+              - "-"
+              - .imgpkg/images.yml
+      deploy:
+        - kapp: {}
+  valuesSchema:
+    openAPIv3:
+      properties:
+        namespace:
+          type: string
+          description: Deployment and service namespace
+          default: kustomize-system
+        limits_cpu:
+          type: string
+          description: Set cpu usage limit
+          default: 1000m
+        limits_memory:
+          type: string
+          description: Set memory usage limit
+          default: 1Gi

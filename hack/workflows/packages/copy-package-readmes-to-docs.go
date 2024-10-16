@@ -12,6 +12,8 @@ import (
 	"sort"
 	"strings"
 
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"gopkg.in/yaml.v3"
 )
 
@@ -53,8 +55,8 @@ type Toc struct {
 
 //nolint:funlen
 func main() {
-	docsDir := filepath.Join("..", "..", "..", "docs", "site", "content", "docs", "latest")
-	imgsDir := filepath.Join("..", "..", "..", "docs", "site", "content", "docs", "img")
+	docsDir := filepath.Join("..", "..", "..", "docs", "site", "content", "docs", "edge")
+	imgsDir := filepath.Join(docsDir, "img")
 	addonsPackagesDir := filepath.Join("..", "..", "..", "addons", "packages")
 
 	// delete any existing package readme files
@@ -108,7 +110,7 @@ func main() {
 				input, err := os.ReadFile(destination)
 				check(err)
 
-				fileContents := strings.Replace(string(input), "images/", "../../img/", -1)
+				fileContents := strings.Replace(string(input), "images/", "../img/", -1)
 
 				err = os.WriteFile(destination, []byte(fileContents), 0644)
 				check(err)
@@ -117,7 +119,7 @@ func main() {
 	}
 
 	// load the table of contents yaml
-	var latestTocPath = filepath.Join("..", "..", "..", "docs", "site", "data", "docs", "latest-toc.yml")
+	var latestTocPath = filepath.Join("..", "..", "..", "docs", "site", "data", "docs", "main-toc.yml")
 	var toc Toc
 
 	source, err = os.ReadFile(latestTocPath)
@@ -132,11 +134,15 @@ func main() {
 		Page:    "Work with Packages",
 		URL:     "/package-management",
 		Package: MyPackage{},
+	}, SubFolderItem{
+		Page:    "Create a Package",
+		URL:     "/package-creation-step-by-step",
+		Package: MyPackage{},
 	})
 	for key, value := range currentPackageVersions {
 		newPackageVersions = append(newPackageVersions, SubFolderItem{
 			Package: MyPackage{
-				DisplayName: strings.Title(strings.Replace(key, "-", " ", -1)),
+				DisplayName: cases.Title(language.Und).String(strings.Replace(key, "-", " ", -1)),
 				Name:        key,
 				Versions:    value,
 			},

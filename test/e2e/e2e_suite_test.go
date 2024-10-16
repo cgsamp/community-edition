@@ -5,7 +5,10 @@ package e2e_test
 
 import (
 	"log"
+	"os"
 	"testing"
+
+	"github.com/joho/godotenv"
 
 	"github.com/vmware-tanzu/community-edition/test/e2e"
 	"github.com/vmware-tanzu/community-edition/test/e2e/testdata"
@@ -24,8 +27,7 @@ var _ = BeforeSuite(func() {
 	Describe("Check if cluster is up and running else install if required", func() {
 		e2e.Initialize()
 
-		// cluster context must be set to guest cluster context for
-		// both standalone and management cluster
+		// cluster context must be set to guest cluster context
 		clusterContext := utils.GetClusterContext(e2e.ConfigVal.GuestClusterName)
 		if !e2e.ConfigVal.ClusterInstallRequired && !e2e.ConfigVal.ClusterCleanupRequired {
 			By("Check Cluster health")
@@ -49,6 +51,23 @@ var _ = AfterSuite(func() {
 		if e2e.VeleroInstalled {
 			err := testdata.UnsinstallVelero()
 			Expect(err).NotTo(HaveOccurred())
+
+			// fetching the bucket prefix name for current e2e test
+			envFileDir := utils.WorkingDir + "/testdata/velero/velero.env"
+			err = godotenv.Load(envFileDir)
+			if err != nil {
+				Expect(err).NotTo(HaveOccurred())
+			}
+			prefixName := os.Getenv("BUCKET_PREFIX")
+
+			// Cleaning the files under prefix_name
+			_, err = utils.Aws("s3", "rm", "s3://tce-velero-e2e-test-backup", "--recursive", "--exclude", "*", "--include", prefixName)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = e2e.RunCommand("rm", envFileDir)
+			if err != nil {
+				Expect(err).NotTo(HaveOccurred())
+			}
 		}
 
 		// delete the cluster

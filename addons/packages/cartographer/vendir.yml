@@ -1,0 +1,28 @@
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+minimumRequiredVersion: 0.12.0
+directories:
+  - path: 0.2.2
+    contents:
+      - path: .
+        includePaths:
+          - README.md
+          - package.yaml
+        githubRelease:
+          slug: vmware-tanzu/package-for-cartographer
+          disableAutoChecksumValidation: true
+          tag: v0.2.2
+          unpackArchive:
+            path: cartographer-tce.tgz
+  - path: 0.3.0
+    contents:
+      - path: .
+        includePaths:
+          - README.md
+          - package.yaml
+        githubRelease:
+          slug: vmware-tanzu/package-for-cartographer
+          disableAutoChecksumValidation: true
+          tag: v0.3.0
+          unpackArchive:
+            path: cartographer-tce.tgz

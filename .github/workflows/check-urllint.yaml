@@ -11,6 +11,7 @@ on:
       - "**.md"
       - "**.yaml"
       - "**.yml"
+      - "hack/check/urllinter/**"
 
 jobs:
   checkurllint:
@@ -18,9 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go 1.x
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: "1.16"
+          go-version: "1.17"
         id: go
 
       - name: Check out code into the Go module directory

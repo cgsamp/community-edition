@@ -30,7 +30,7 @@ func installTCE() error {
 		}
 
 		start := time.Now()
-		runDeployScript("build-tce.sh", "")
+		runDeployScript("download-or-build-tce.sh", "")
 		log.Println("Time taken for build and install TCE release from source code: ", time.Since(start))
 
 		err = os.Chdir(u.WorkingDir)
@@ -61,6 +61,12 @@ func installCluster() error {
 
 	log.Println("Total Time taken for bringing up "+ConfigVal.ClusterType+" cluster : ", time.Since(s))
 	return nil
+}
+
+func installAWSCli() {
+	// Installing AWS CLI
+	log.Println("Installing AWS CLI...")
+	runDeployScript("ensure-aws-cli.sh", "")
 }
 
 func runDeployScript(filename, releaseVersion string) {

@@ -9,6 +9,7 @@ set -o pipefail
 set -o xtrace
 
 BUILD_VERSION="${BUILD_VERSION:-""}"
+TCE_CI_BUILD="${TCE_CI_BUILD:-""}"
 
 # required input
 if [[ -z "${BUILD_VERSION}" ]]; then
@@ -39,12 +40,17 @@ set -x
 
 # post and create rss.xml
 pushd "hack/dailybuild" || exit 1
+PREVIOUS_DAILY_HASH=$(cat ./PREVIOUS_DAILY_HASH)
+echo "${ACTUAL_COMMIT_SHA}" | tee ./PREVIOUS_DAILY_HASH
 
-make run
+echo "ACTUAL_COMMIT_SHA: ${ACTUAL_COMMIT_SHA}"
+echo "PREVIOUS_DAILY_HASH: ${PREVIOUS_DAILY_HASH}"
+
+go run ./dailybuild.go -previous "${PREVIOUS_DAILY_HASH}" -current "${ACTUAL_COMMIT_SHA}" -tag "${BUILD_VERSION}"
 
 popd || exit 1
 
-# commit rss.xml to github
+# commit readme and hash to github
 git stash
 
 DATE=$(date +%F)
@@ -59,8 +65,9 @@ fi
 
 git stash pop
 
-git add rss.xml
-git commit -s -m "auto-generated - update daily build rss"
+git add README.md
+git add hack/dailybuild/PREVIOUS_DAILY_HASH
+git commit -s -m "auto-generated - update daily build in README"
 git push origin "dailybuild-${DATE}"
-gh pr create --title "auto-generated - update daily build rss" --body "auto-generated - update daily build rss"
+gh pr create --title "auto-generated - update daily build in README" --body "auto-generated - update daily build in README"
 gh pr merge "dailybuild-${DATE}" --delete-branch --squash --admin

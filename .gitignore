@@ -20,11 +20,11 @@ _test
 _output
 /addons/repos/generated/
 /build
+/release
 hack/NEW_BUILD_VERSION
 cayman_trigger.txt
 artifacts
 artifacts-admin
-bin
 addons/repos/generated
 
 # Architecture specific extensions/prefixes
@@ -52,14 +52,16 @@ Tiltfile
 
 cover.out
 
+.DS_Store
+
 # Hugo compiled data
 docs/site/public
 docs/site/resources
 
 .vs
+.idea
+.vscode
 
-# package configuration values files
-*-values.yaml
 .envrc
 
 # tar balls

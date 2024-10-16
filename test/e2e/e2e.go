@@ -53,7 +53,7 @@ func New() *Config {
 	flag.StringVar(&e2eConfig.Kubeconfig, "kubeconfig", "", "Paths to a kubeconfig. Only required if out-of-cluster.")
 	flag.StringVar(&e2eConfig.Kubecontext, "kube-context", "", "Cluster context need to be set. ")
 	flag.StringVar(&e2eConfig.Provider, "provider", "", "Provider name in which cluster is running. Values can be docker, aws, vsphere")
-	flag.StringVar(&e2eConfig.ClusterType, "cluster-type", "", "Provide cluster type. eg: standalone, management")
+	flag.StringVar(&e2eConfig.ClusterType, "cluster-type", "", "Provide cluster type. eg: management")
 	flag.StringVar(&e2eConfig.Packages, "packages", "", "Provide package list or 'all'. eg:--packages=all, --packages='antrea, external-dns'")
 	flag.StringVar(&e2eConfig.Version, "version", "", "Provide package version. eg: --version='0.11.3,0.8.0'")
 	flag.StringVar(&e2eConfig.TceVersion, "tce-version", "", "Provide tce release version to install. If not provided then build it from source code.")
@@ -188,11 +188,19 @@ func runPackageTest(pkgName, version string) error {
 
 	// Install velero to run the test
 	if pkgName == "velero" {
+		runDeployScript("e2e/utils/velero/velero_prefix_setup.sh", "")
+
 		err := testdata.InstallVelero(version)
 		if err != nil {
 			log.Println("Error while installing Velero", err)
 			return err
 		}
+
+		runDeployScript("e2e/utils/velero/velero_prefix_cleanup.sh", "")
+
+		// installing AWS CLI
+		installAWSCli()
+
 		VeleroInstalled = true
 	}
 
@@ -202,7 +210,7 @@ func runPackageTest(pkgName, version string) error {
 	}
 	log.Println("Running package testing in ", mydir)
 
-	err = runCommand("make", "e2e-test")
+	err = RunCommand("make", "e2e-test")
 	if err != nil {
 		return err
 	}
@@ -210,7 +218,7 @@ func runPackageTest(pkgName, version string) error {
 	return nil
 }
 
-func runCommand(commandName, args string) error {
+func RunCommand(commandName, args string) error {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 

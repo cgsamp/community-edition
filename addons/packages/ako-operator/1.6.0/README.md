@@ -17,12 +17,27 @@ in the future.
 |:---:|:---:|:---:|:---:|
 |  ❌ |   ❌ | ✅  |  ❌  |
 
+## Mailing lists
+
+* Use [tkg-infrax-akita](mailto:tkg-infrax-akita@groups.vmware.com) to report security concerns to the AKO Team,
+  who uses the list to privately discuss security issues and fixes prior to disclosure.
+
+[comment]: <> (* Join the[AKO Distributors]&#40;mailto:tkg-infrax-akita@groups.vmware.com&#41; mailing list for early private information and vulnerability disclosure.)
+
+[comment]: <> (  Early disclosure may include mitigating steps and additional information on security patch releases.)
+
+[comment]: <> (* Send new membership requests to tkg-infrax-akita@groups.vmware.com.)
+
+[comment]: <> (  In the body of your request please specify how you qualify for)
+
+[comment]: <> (  membership and fulfill each criterion listed in the Membership Criteria section above.)
+
 ## ako-operator integration with Tanzu Community Edition (TCE)
 
 ### Prerequisites
 
 * vSphere is the supported cloud provider for this package. Before proceeding, make sure you have a running management cluster on vSphere
-following the [steps](https://tanzucommunityedition.io/docs/latest/vsphere-intro/). Verify it is running with `tanzu management-cluster get`.
+following the [steps](https://tanzucommunityedition.io/docs/vsphere-intro/). Verify it is running with `tanzu management-cluster get`.
 * Retrieve the context of the management cluster with `tanzu management-cluster kubeconfig get --admin`, and then switch to the context.
 * Install and set up the AVI Controller on the vCenter Server, following the [documentation](https://docs.vmware.com/en/VMware-Tanzu-Kubernetes-Grid/1.4/vmware-tanzu-kubernetes-grid-14/GUID-mgmt-clusters-install-nsx-adv-lb.html#install-avi-controller-on-vcenter-server-7).
 
@@ -124,16 +139,6 @@ The following configuration values can be set to customize the ako-operator inst
 | `avi_management_cluster_control_plane_vip_network_name` | Required | describes the name of the management cluster control plane network. |
 | `avi_management_cluster_control_plane_vip_network_cidr` | Required | describes the cidr of the management cluster control plane network. |
 | `avi_control_plane_endpoint_port`| Optional | describe the port of AVI control plane endpoint |
-| `avi_enable_evh` | Optional | describes should the Enhanced Virtual Hosting Model in Avi controller for Virtual Services be enabled |
-| `avi_l7_only` | Optional | describes should AKO only to do layer 7 load balancing |
-| `avi_services_api` | Optional |  describes should enable AKO in [services API mode](https://kubernetes-sigs.github.io/service-apis/) |
-| `avi_namespace_selector_label_key` | Optional | describes the label key used for namespace migration |
-| `avi_namespace_selector_label_value` | Optional | describes the label value used for namespace migration |
-| `avi_enable_rhi` |  Optional | describes should the Route Health Injection be enabled for BGP |
-| `avi_bgp_peer_labels` |  Optional | describe BGP peers, this is used for selective VsVip advertisement |
-| `avi_no_pg_for_sni` | Optional |  describes if you want to get rid of pool groups from SNI VSes |
-| `avi_advanced_l4` | Optional | describes the settings for the services API usage for L4 |
-| `avi_auto_fqdn` | Optional |  describes the FQDN generation for L4: default,flat,disabled |
 
 ### Verify your configurations  
 

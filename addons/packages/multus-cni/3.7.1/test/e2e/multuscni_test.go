@@ -11,6 +11,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
 	"github.com/vmware-tanzu/community-edition/addons/packages/test/pkg/utils"
 )
 
@@ -18,6 +19,7 @@ var (
 	// The net1 is the default iface name when not appointed.
 	checkMacVlanIFaceExistence = "ip a show dev net1"
 	checkIFaceStatus           = "ip -j a show net1 | jq -r '.[]|.operstate'"
+	checkMTUValue              = "ip -j a show net1 | jq -r '.[]|.mtu'"
 	getMacVlanIP               = "ip -j a show | jq -r '.[]|select(.ifname ==\"net1\")|.addr_info[]|select(.family==\"inet\").local'"
 )
 
@@ -33,15 +35,15 @@ var _ = Describe("Multus CNI Addon E2E Test", func() {
 		}
 		_, err = utils.Tanzu(nil, installOptions...)
 		Expect(err).NotTo(HaveOccurred())
-		_, err = utils.Kubectl(nil, "apply", "-f", filepath.Join(curDir, "multihomed-testfiles/cni-install.yaml"))
-		Expect(err).NotTo(HaveOccurred())
-
 		utils.ValidatePackageInstallReady(packageInstalledNamespace, packageInstalledName)
 		utils.ValidateDaemonsetReady("kube-system", "kube-multus-ds-amd64")
+
+		_, err = utils.Kubectl(nil, "apply", "-f", filepath.Join(curDir, "multihomed-testfiles/cni-install.yaml"))
+		Expect(err).NotTo(HaveOccurred())
+		utils.ValidateDaemonsetReady("kube-system", "install-cni-plugins")
+
 		_, err = utils.Kubectl(nil, "apply", "-f", filepath.Join(curDir, "multihomed-testfiles/simple-macvlan.yaml"))
 		Expect(err).NotTo(HaveOccurred())
-
-		utils.ValidateDaemonsetReady("kube-system", "install-cni-plugins")
 		utils.ValidatePodReady("default", "macvlan-worker")
 
 		// Just do a simple check for which image is using
@@ -51,7 +53,10 @@ var _ = Describe("Multus CNI Addon E2E Test", func() {
 
 	JustBeforeEach(func() {
 		By("Should install jq command")
-		_, err := utils.Kubectl(nil, "exec", "macvlan-worker", "--", "yum", "install", "-y", "jq")
+		updateCentOSRepo := "cd /etc/yum.repos.d/ && sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* && sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*"
+		_, err := utils.Kubectl(nil, "exec", "macvlan-worker", "--", "bash", "-c", updateCentOSRepo)
+		Expect(err).NotTo(HaveOccurred())
+		_, err = utils.Kubectl(nil, "exec", "macvlan-worker", "--", "yum", "install", "-y", "jq")
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -61,6 +66,8 @@ var _ = Describe("Multus CNI Addon E2E Test", func() {
 			_, err := utils.Kubectl(nil, "get", "app", packageInstalledName, "-n", packageInstalledNamespace, "-o", "jsonpath={.status}")
 			Expect(err).NotTo(HaveOccurred())
 			_, err = utils.Kubectl(nil, "get", "daemonset", "kube-multus-ds-amd64", "-n", "kube-system", "-o", "jsonpath={.status}")
+			Expect(err).NotTo(HaveOccurred())
+			_, err = utils.Kubectl(nil, "get", "pod", "macvlan-worker", "-n", "default", "-o", "jsonpath={.status}")
 			Expect(err).NotTo(HaveOccurred())
 		}
 	})
@@ -101,6 +108,12 @@ var _ = Describe("Multus CNI Addon E2E Test", func() {
 			"bash", "-c", checkIFaceStatus)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(strings.Replace(ifstatus, "\n", "", -1)).To(Equal("UP"))
+
+		By("check pod interface mtu: net1")
+		ifmtu, err := utils.Kubectl(nil, "exec", "macvlan-worker", "--",
+			"bash", "-c", checkMTUValue)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(strings.Replace(ifmtu, "\n", "", -1)).To(Equal("1450"))
 
 		By("get pod interface address: net1")
 		ip, err := utils.Kubectl(nil, "exec", "macvlan-worker", "--",

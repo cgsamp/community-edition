@@ -1,0 +1,24 @@
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+minimumRequiredVersion: 0.12.0
+directories:
+  - path: 8.1.7
+    contents:
+      - path: .
+        githubRelease:
+          slug: vmware-tanzu/package-for-kubeapps
+          tag: v8.1.7
+          disableAutoChecksumValidation: true
+          assetNames:
+          - "package.yaml"
+          - "README.md"
+  - path: 9.0.3
+    contents:
+      - path: .
+        githubRelease:
+          slug: vmware-tanzu/package-for-kubeapps
+          tag: v9.0.3
+          disableAutoChecksumValidation: true
+          assetNames:
+          - "package.yaml"
+          - "README.md"

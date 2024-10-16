@@ -5,7 +5,6 @@
 
 BUILD_DATE ?= $$(date -u +"%Y-%m-%d")
 BUILD_SHA ?= $$(git rev-parse --short HEAD)
-BUILD_EDITION=tce-standalone
 OS ?= $(shell go env GOOS)
 ARCH ?= $(shell go env GOARCH)
 
@@ -16,20 +15,8 @@ ifndef TKG_DEFAULT_COMPATIBILITY_IMAGE_PATH
 TKG_DEFAULT_COMPATIBILITY_IMAGE_PATH = "framework-zshippable/tkg-compatibility"
 endif
 
-ifndef IS_OFFICIAL_BUILD
-IS_OFFICIAL_BUILD = ""
-endif
-
-ifndef BUILD_VERSION
-BUILD_VERSION ?= $$(git describe --tags --abbrev=0)
-endif
-
-ifndef TANZU_PLUGIN_UNSTABLE_VERSIONS
-TANZU_PLUGIN_UNSTABLE_VERSIONS = "experimental"
-endif
-
 ifeq ($(strip $(BUILD_VERSION)),)
-BUILD_VERSION = dev
+BUILD_VERSION = $(shell git describe --tags --abbrev=0)
 endif
 
 # TODO: Push this down into the conformance plugin's own Makefile
@@ -42,8 +29,9 @@ LD_FLAGS += -X "github.com/vmware-tanzu/tanzu-framework/pkg/v1/tkg/tkgconfigpath
 LD_FLAGS += -X "github.com/vmware-tanzu/tanzu-framework/pkg/v1/buildinfo.Date=$(BUILD_DATE)"
 LD_FLAGS += -X "github.com/vmware-tanzu/tanzu-framework/pkg/v1/buildinfo.SHA=$(BUILD_SHA)"
 LD_FLAGS += -X "github.com/vmware-tanzu/tanzu-framework/pkg/v1/buildinfo.Version=$(BUILD_VERSION)"
-LD_FLAGS += -X 'main.BuildEdition=$(BUILD_EDITION)'
-LD_FLAGS += -X 'github.com/vmware-tanzu/tanzu-framework/pkg/v1/tkg/buildinfo.IsOfficialBuild=$(IS_OFFICIAL_BUILD)'
+LD_FLAGS += -X 'github.com/vmware-tanzu/community-edition/cli/cmd/plugin.Date=$(BUILD_DATE)'
+LD_FLAGS += -X 'github.com/vmware-tanzu/community-edition/cli/cmd/plugin.SHA=$(BUILD_SHA)'
+LD_FLAGS += -X 'github.com/vmware-tanzu/community-edition/cli/cmd/plugin.Version=$(BUILD_VERSION)'
 
 ifneq ($(strip $(TANZU_CORE_BUCKET)),)
 LD_FLAGS += -X 'github.com/vmware-tanzu/tanzu-framework/pkg/v1/config.CoreBucketName=$(TANZU_CORE_BUCKET)'
@@ -93,17 +81,40 @@ endif
 
 check: check-go check-build-version check-ld-flags check-artifacts
 
-framework-set-unstable-versions:
-	TANZU_CLI_NO_INIT=true $(GO) run -ldflags "$(LD_FLAGS)" github.com/vmware-tanzu/tanzu-framework/cmd/cli/tanzu config set unstable-versions $(TANZU_PLUGIN_UNSTABLE_VERSIONS)
-	rm -rf ~/.config/tanzu/config.yaml
-
 # TODO: Post-MVP, this needs to be able to compile individual plugins with their own Makefiles.
 # As it stands, we cannot customize LDFLAGS per plugin
 compile: check ## Compiles the TCE plugins using the Tanzu Framework builder
-	$(GO) run github.com/vmware-tanzu/tanzu-framework/cmd/cli/plugin-admin/builder cli compile --version $(BUILD_VERSION) \
-		--ldflags "$(LD_FLAGS)" --path ../../cli/cmd/plugin --artifacts ../../${ARTIFACTS_DIR} --target ${OS}_${ARCH}
+	$(GO) run github.com/vmware-tanzu/tanzu-framework/cmd/cli/plugin-admin/builder cli compile \
+	--version $(BUILD_VERSION) --ldflags "$(LD_FLAGS)" --path ../../cli/cmd/plugin \
+	--ldflags "$(LD_FLAGS) -X 'github.com/vmware-tanzu/tanzu-framework/pkg/v1/config.DefaultStandaloneDiscoveryType=local'" \
+	--artifacts ../../${ARTIFACTS_DIR}/${OS}/${ARCH}/cli --target ${OS}_${ARCH}
+
+publish:
+# For TF 0.17.0 or higher
+# $(GO) run github.com/vmware-tanzu/tanzu-framework/cmd/cli/plugin-admin/builder publish \
+# --type local --plugins "$(PLUGINS)" --version $(BUILD_VERSION) --os-arch "${OS}-${ARCH}" \
+# --local-output-discovery-dir "../../build/${OS}-${ARCH}-${DISCOVERY_NAME}/discovery/${DISCOVERY_NAME}" \
+# --local-output-distribution-dir "../../build/${OS}-${ARCH}-${DISCOVERY_NAME}/distribution" \
+# --input-artifact-dir ../../${ARTIFACTS_DIR}
+# For 0.11.2
+	rm -rf ./discovery && \
+	rm -rf ./${OS} && \
+	mkdir -p "../../build/${OS}-${ARCH}-${DISCOVERY_NAME}/distribution" && \
+	$(GO) run github.com/vmware-tanzu/tanzu-framework/cmd/cli/plugin-admin/builder publish \
+	--type local --plugins "$(PLUGINS)" --version $(BUILD_VERSION) --os-arch "${OS}-${ARCH}" \
+	--local-output-discovery-dir "discovery/${DISCOVERY_NAME}" \
+	--local-output-distribution-dir "." \
+	--input-artifact-dir ../../${ARTIFACTS_DIR} && \
+	mv -f "./${OS}" "../../build/${OS}-${ARCH}-${DISCOVERY_NAME}/distribution/" && \
+	mv -f ./discovery "../../build/${OS}-${ARCH}-${DISCOVERY_NAME}/discovery/" 
 
 install-plugins: check ## Installs the compiled TCE plugins
-	TANZU_CLI_NO_INIT=true $(GO) run -ldflags "$(LD_FLAGS)" github.com/vmware-tanzu/tanzu-framework/cmd/cli/tanzu \
-		plugin install all --local ../../$(ARTIFACTS_DIR)
-
+# For TF 0.17.0 or higher
+# TANZU_CLI_NO_INIT=true $(GO) run -ldflags "$(LD_FLAGS)" github.com/vmware-tanzu/tanzu-framework/cmd/cli/tanzu \
+# 	plugin install all --local ../../build/${OS}-${ARCH}-${DISCOVERY_NAME}
+# For 0.11.2
+	mkdir -p "${XDG_CONFIG_HOME}/tanzu-plugins" && \
+	cp -r "../../build/${OS}-${ARCH}-${DISCOVERY_NAME}/." "${XDG_CONFIG_HOME}/tanzu-plugins" && \
+	tanzu plugin install conformance && \
+	tanzu plugin install diagnostics && \
+	tanzu plugin install unmanaged-cluster

@@ -19,7 +19,7 @@ var (
 	bootScriptPath = "scripts/bootstrap_cluster.star"
 	mgmtScriptPath = "scripts/management_cluster.star"
 	wcScriptPath   = "scripts/workload_cluster.star"
-	saScriptPath   = "scripts/standalone_cluster.star"
+	umScriptPath   = "scripts/unmanaged_cluster.star"
 )
 
 var (
@@ -41,7 +41,7 @@ var (
 		namespace: "default",
 	}
 
-	standaloneArgs = &collectStandaloneArgs{
+	unmanagedArgs = &collectUnmanagedArgs{
 		kubeconfig: getDefaultKubeconfig(),
 	}
 )
@@ -56,7 +56,7 @@ func CollectCmd(fs embed.FS) *cobra.Command {
 		mgmtArgs.contextName = mgmtSvr.kubecontext
 	}
 
-	standaloneArgs.kubeconfig = getDefaultKubeconfig()
+	unmanagedArgs.kubeconfig = getDefaultKubeconfig()
 
 	cmd := &cobra.Command{
 		Use:   "collect",
@@ -85,10 +85,10 @@ func CollectCmd(fs embed.FS) *cobra.Command {
 	cmd.Flags().StringVar(&workloadArgs.contextName, "workload-cluster-context", workloadArgs.contextName, "The context name of the workload cluster")
 	cmd.Flags().StringVar(&workloadArgs.namespace, "workload-cluster-namespace", workloadArgs.namespace, "The namespace where managed workload resources are stored")
 
-	// standalone
-	cmd.Flags().StringVar(&standaloneArgs.kubeconfig, "standalone-cluster-kubeconfig", standaloneArgs.kubeconfig, "The standalone cluster config file (required)")
-	cmd.Flags().StringVar(&standaloneArgs.clusterName, "standalone-cluster-name", standaloneArgs.clusterName, "The name for the standalone cluster (required)")
-	cmd.Flags().StringVar(&standaloneArgs.contextName, "standalone-cluster-context", standaloneArgs.contextName, "The context name of the standalone cluster")
+	// unmanaged
+	cmd.Flags().StringVar(&unmanagedArgs.kubeconfig, "unmanaged-cluster-kubeconfig", unmanagedArgs.kubeconfig, "The unmanaged cluster config file (required)")
+	cmd.Flags().StringVar(&unmanagedArgs.clusterName, "unmanaged-cluster-name", unmanagedArgs.clusterName, "The name for the unmanaged cluster (required)")
+	cmd.Flags().StringVar(&unmanagedArgs.contextName, "unmanaged-cluster-context", unmanagedArgs.contextName, "The context name of the unmanaged cluster")
 
 	cmd.RunE = collectFunc
 	return cmd
@@ -130,7 +130,7 @@ func collectFunc(_ *cobra.Command, _ []string) error {
 		log.Printf("Warn: skipping cluster diagnostics: %s", err)
 	}
 
-	if err := collectStandaloneDiags(); err != nil {
+	if err := collectUnmanagedDiags(); err != nil {
 		log.Printf("Warn: skipping cluster diagnostics: %s", err)
 	}
 

@@ -134,7 +134,8 @@ button {
     background-color: unset;
     border: none;
 }
-.strong {
+
+strong, .strong {
     font-family: $metropolis-medium;
 }
 
@@ -152,7 +153,7 @@ button {
     display: grid;
     grid-template-columns: 1fr 1fr;
     @include breakpoint(small) {
-        grid-template-columns: 1fr;
+        display: block;
     }
 }
 
@@ -187,6 +188,15 @@ img.float-right {
   @include breakpoint(small-up) {
     float: right;
     margin: 0 0 20px 40px;
+  }
+}
+
+img.float-left {
+  display: block;
+  margin-bottom: 20px;
+  @include breakpoint(small-up) {
+    float: left;
+    margin: 0 40px 20px 0;
   }
 }
 
@@ -252,4 +262,36 @@ table {
       }
     }
   }
+}
+
+// display
+.d-md-flex {
+  @include breakpoint(medium-up) {
+    display: flex;
+  }
+}
+.jc-md-between {
+  @include breakpoint(medium-up) {
+    justify-content: space-between;
+  }
+}
+.d-none {
+  display: none !important;
+}
+
+// helpers
+.hairline-top {
+  border-top: 1px solid $lightblue;
+  margin-top: 30px;
+  padding-top: 30px;
+}
+
+.semibold {
+  font-family: $metropolis-semibold;
+}
+
+hr {
+  border-color: lighten($grey, 20%);
+  border-style: solid;
+  border-width: 1px 0 0 0;
 }

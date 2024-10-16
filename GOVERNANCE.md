@@ -5,9 +5,9 @@ This document defines the project governance for Tanzu Community Edition, an ope
 
 ## Overview
 
-VMware Tanzu Community Edition is a full-featured, easy to manage Kubernetes platform for learners and users. It is a freely available, community supported, open source distribution of VMware Tanzu that can be installed and configured in minutes on your local workstation or your favorite cloud.
+VMware Tanzu Community Edition is a full-featured, easy to manage Tanzu platform for learners and users. It is a freely available, community supported, open source distribution of VMware Tanzu that can be installed and configured in minutes on your local workstation or your favorite cloud.
 
-We are committed to the project not only delivering the distribution, but also building an open, inclusive, and productive open, inclusive, and productive vendor driven open source community; together, we will advance a reliable, nimble, and extensible foundation for modern applications.
+We are committed to the project not only delivering the distribution, but also building an open, inclusive, and productive vendor driven open source community; together, we will advance a reliable, nimble, and extensible foundation for modern applications.
 
 ## Community
 
@@ -26,6 +26,6 @@ To understand our proposal process, please review [docs/designs](docs/designs/RE
 ## Lazy Consensus
 
 To maintain velocity in a project as busy as Tanzu Community Edition, the concept of Lazy Consensus is practiced. Ideas and / or proposals should be shared by maintainers via GitHub with the appropriate maintainer groups (e.g., @vmware-tanzu/tce-maintainers) tagged. Out of respect for other contributors, major changes should also be accompanied by a ping on Slack, and a note on the Tanzu Community Edition mailing list as appropriate. Author(s) of proposals, pull requests, issues, etc. will specify a time period of no less than five (5) working days for comment and remain cognizant of popular observed world holidays.
-Other maintainers may request additional time for review, but should avoid blocking progress and abstain from delaying progress unless absolutely needed. The expectation is that blocking progress is accompanied by a guarantee to review and respond to the relevant action(s) (proposals, PRs, issues, etc.) in short order. All pull requests need to be approved by two (2) maintainers.
+Other maintainers may request additional time for review, but should avoid blocking progress and abstain from delaying progress unless absolutely needed. The expectation is that blocking progress is accompanied by a guarantee to review and respond to the relevant action(s) (proposals, PRs, issues, etc.) in short order. All pull requests need to be approved by at least 1 maintainer.
 
 Lazy Consensus is practiced for the main project repository and the additional repositories listed above.

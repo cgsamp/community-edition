@@ -4,7 +4,7 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 
@@ -19,7 +19,7 @@ and remove the configuration stored in $HOME/.config/tanzu/tkg/unmanaged/${CLUST
 // DeleteCmd deletes an unmanaged workload cluster.
 var DeleteCmd = &cobra.Command{
 	Use:   "delete <cluster name>",
-	Short: "Delete an unmanaged tanzu cluster",
+	Short: "Delete an unmanaged cluster",
 	Long:  deleteDesc,
 	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		return nil
@@ -29,6 +29,7 @@ var DeleteCmd = &cobra.Command{
 	PostRunE: func(cmd *cobra.Command, args []string) (err error) {
 		return nil
 	},
+	Args: checkSingleClusterArg,
 }
 
 func init() {
@@ -36,22 +37,17 @@ func init() {
 }
 
 func destroy(cmd *cobra.Command, args []string) error {
-	var clusterName string
+	// args have already been checked by DeleteCmd.Args()
+	clusterName := args[0]
 
-	// validate a cluster name was passed
-	if len(args) < 1 {
-		return fmt.Errorf("must specify cluster name to delete")
-	} else if len(args) == 1 {
-		clusterName = args[0]
-	}
-	log := logger.NewLogger(TtySetting(cmd.Flags()), 0)
+	log := logger.NewLogger(TtySetting(cmd.Flags()), LoggingVerbosity(cmd))
 
 	log.Eventf(logger.TestTubeEmoji, "Deleting cluster: %s\n", clusterName)
 	tClient := tanzu.New(log)
 	err := tClient.Delete(clusterName)
 	if err != nil {
-		log.Errorf("Failed to delete cluster. Error: %s\n", err.Error())
-		return nil
+		log.Errorf("Failed delete operation. Error: %s\n", err.Error())
+		os.Exit(1)
 	}
 
 	log.Eventf(logger.TestTubeEmoji, "Deleted cluster: %s\n", clusterName)

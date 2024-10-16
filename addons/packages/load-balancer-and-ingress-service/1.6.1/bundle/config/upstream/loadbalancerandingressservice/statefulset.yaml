@@ -98,11 +98,16 @@ spec:
               cpu: 350m
               memory: 400Mi
             requests:
-              cpu: 100m
-              memory: 200Mi
+              cpu: 200m
+              memory: 300Mi
           livenessProbe:
             httpGet:
               path: /api/status
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 10
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane

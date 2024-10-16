@@ -17,8 +17,29 @@ addons/packages/ako-operator @vmware-tanzu/pkg-ako-operator-owners
 ## Ownership of the antrea package
 addons/packages/antrea @vmware-tanzu/pkg-antrea-owners
 
+## Ownership of the app-toolkit package
+addons/packages/app-toolkit @vmware-tanzu/pkg-app-toolkit-owners
+
+## Ownership of the aws-ebs-csi-driver package
+addons/packages/aws-ebs-csi-driver @vmware-tanzu/pkg-aws-ebs-csi-driver-owners
+
+## Ownership of the azuredisk-csi-driver package
+addons/packages/azuredisk-csi-driver @vmware-tanzu/pkg-azuredisk-csi-driver-owners
+
+## Ownership of the azurefile-csi-driver package
+addons/packages/azurefile-csi-driver @vmware-tanzu/pkg-azurefile-csi-driver-owners
+
 ## Ownership of the calico package
 addons/packages/calico @vmware-tanzu/pkg-calico-owners
+
+## Ownership of the cartographer package
+addons/packages/cartographer @vmware-tanzu/pkg-cartographer-owners
+
+## Ownership of the cartographer-catalog package
+addons/packages/cartographer-catalog @vmware-tanzu/pkg-cartographer-owners
+
+## Ownership of the cert-injection-webhook package
+addons/packages/cert-injection-webhook @vmware-tanzu/pkg-cert-injection-webhook-owners
 
 ## Ownership of the cert-manager package
 addons/packages/cert-manager @vmware-tanzu/pkg-cert-manager-owners
@@ -26,14 +47,20 @@ addons/packages/cert-manager @vmware-tanzu/pkg-cert-manager-owners
 ## Ownership of the contour package
 addons/packages/contour @vmware-tanzu/pkg-contour-owners
 
-## Ownership of the contour-operator package
-addons/packages/contour-operator @vmware-tanzu/pkg-contour-owners
-
 ## Ownership of the external-dns package
 addons/packages/external-dns @vmware-tanzu/pkg-external-dns-owners
 
 ## Ownership of the fluent-bit package
 addons/packages/fluent-bit @vmware-tanzu/pkg-fluent-bit-owners
+
+## Ownership of the fluxcd-helm-controller package
+addons/packages/fluxcd-helm-controller @vmware-tanzu/pkg-fluxcd-helm-controller-owners
+
+## Ownership of the fluxcd-kustomize-controller package
+addons/packages/fluxcd-kustomize-controller @vmware-tanzu/pkg-fluxcd-kustomize-controller-owners
+
+## Ownership of the fluxcd-source-controller package
+addons/packages/fluxcd-source-controller @vmware-tanzu/pkg-fluxcd-source-controller-owners
 
 ## Ownership of the gatekeeper package
 addons/packages/gatekeeper @vmware-tanzu/pkg-gatekeeper-owners
@@ -49,6 +76,15 @@ addons/packages/kapp-controller @vmware-tanzu/pkg-kapp-controller-owners
 
 ## Ownership of the knative-serving package
 addons/packages/knative-serving @vmware-tanzu/pkg-knative-serving-owners
+
+## Ownership of the kpack package
+addons/packages/kpack @vmware-tanzu/pkg-kpack-owners
+
+## Ownership of the kpack-dependencies package
+addons/packages/kpack-dependencies @vmware-tanzu/pkg-kpack-owners
+
+## Ownership of the kubeapps package
+addons/packages/kubeapps @vmware-tanzu/pkg-kubeapps-owners
 
 ## Ownership of the load-balancer-and-ingress-service package
 addons/packages/load-balancer-and-ingress-service @vmware-tanzu/pkg-load-balancer-and-ingress-service-owners
@@ -70,6 +106,9 @@ addons/packages/prometheus @vmware-tanzu/pkg-prometheus-owners
 
 ## Ownership of the secretgen-controller package
 addons/packages/secretgen-controller @vmware-tanzu/pkg-secretgen-controller-owners
+
+## Ownership of the sriov-network-device-plugin package
+addons/packages/sriov-network-device-plugin @vmware-tanzu/pkg-sriov-network-device-plugin-owners
 
 ## Ownership of the velero package
 addons/packages/velero @vmware-tanzu/pkg-velero-owners

@@ -89,7 +89,7 @@ var _ = BeforeSuite(func() {
 
 	packageDependencies = []*packageDependency{
 		{"cert-manager", "cert-manager", ""},
-		{"contour", "Contour", filepath.Join("fixtures", "contour.yaml")},
+		{"contour", "contour", filepath.Join("fixtures", "contour.yaml")},
 	}
 
 	if !hasDefaultStorageClass() {
@@ -102,7 +102,8 @@ var _ = BeforeSuite(func() {
 		By(fmt.Sprintf("installing %s addon package", dependency.Name))
 
 		packageName := utils.TanzuPackageName(dependency.DisplayName)
-		version := utils.TanzuPackageAvailableVersion(packageName)
+
+		version := findPackageAvailableVersion(packageName, "")
 		installPackage(dependency.Name, packageName, version, dependency.ValuesFile)
 	}
 
@@ -111,7 +112,7 @@ var _ = BeforeSuite(func() {
 
 	harborAdminPassword = generateHarborPassword()
 
-	packageName := utils.TanzuPackageName("Harbor")
+	packageName := utils.TanzuPackageName("harbor")
 
 	version := findPackageAvailableVersion(packageName, "2.2.3")
 
@@ -160,17 +161,16 @@ func findPackageAvailableVersion(packageName string, versionSubstr string) strin
 	Expect(err).NotTo(HaveOccurred())
 	Expect(len(versions)).To(BeNumerically(">", 0))
 
-	var version string
+	var matchedVersions []string
 	for _, v := range versions {
-		if strings.Contains(v["version"], versionSubstr) {
-			version = v["version"]
-			break
+		if versionSubstr == "" || strings.Contains(v["version"], versionSubstr) {
+			matchedVersions = append(matchedVersions, v["version"])
 		}
 	}
 
-	Expect(version).NotTo(BeEmpty(), fmt.Sprintf("version contains %s for package %s not found", versionSubstr, packageName))
+	Expect(len(matchedVersions)).To(BeNumerically(">", 0), fmt.Sprintf("version contains %s for package %s not found", versionSubstr, packageName))
 
-	return version
+	return matchedVersions[len(matchedVersions)-1]
 }
 
 func hasDefaultStorageClass() bool {
@@ -288,6 +288,7 @@ func installPackage(name, packageName, version, valuesFilename string) {
 	}
 
 	_, err := utils.Tanzu(nil, args...)
+	_, _ = utils.Tanzu(nil, "package", "installed", "list")
 	Expect(err).NotTo(HaveOccurred())
 }
 

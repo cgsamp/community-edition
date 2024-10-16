@@ -1,0 +1,97 @@
+name: Check - All linters, etc
+on:
+  push:
+    branches:
+      - main
+      - release-*
+    tags-ignore:
+      - "**"
+
+jobs:
+  setup-runner:
+    name: Start self-hosted EC2 runner
+    runs-on: ubuntu-latest
+    outputs:
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Start EC2 runner
+        id: start-ec2-runner
+        shell: bash
+        run: |
+          echo "GITHUB_RUN_ID: ${GITHUB_RUN_ID}"
+          echo "GITHUB_RUN_NUMBER: ${GITHUB_RUN_NUMBER}"
+          echo "GITHUB_RUN_ATTEMPT: ${GITHUB_RUN_ATTEMPT}"
+          INSTANCE_NAME="id-${GITHUB_RUN_ID}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
+          echo "INSTANCE_NAME: ${INSTANCE_NAME}"
+          echo ::set-output name=ec2-instance-id::${INSTANCE_NAME}
+  build-release:
+    name: Build Release based on Main
+    needs: setup-runner # required to start the main job when the runner is ready
+    runs-on: ${{ needs.setup-runner.outputs.ec2-instance-id }} # run the job on the newly created runner
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.17"
+        id: go
+      - name: Check out code
+        uses: actions/checkout@v1
+      - name: Get Date
+        id: get-date
+        shell: bash
+        run: |
+          echo "::set-output name=date::$(date -u "+%Y-%m")"
+      - name: Restore Go Cache
+        uses: actions/cache@v3
+        timeout-minutes: 10
+        continue-on-error: true
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ steps.get-date.outputs.date }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Ensure dependencies installed
+        shell: bash
+        run: |
+          make ensure-deps
+      - name: Run all checks
+        shell: bash
+        run: |
+          PRINT_FAILURES=1 make check-full
+      - name: Get dependencies
+        shell: bash
+        run: |
+          make get-deps
+      - name: Build
+        shell: bash
+        run: |
+          make release ENVS=linux-amd64
+      - name: Plugin unit tests
+        shell: bash
+        run: |
+          make test-plugins
+      - name: Package unit tests
+        shell: bash
+        run: |
+          make test-packages
+      - name: Install
+        shell: bash
+        run: |
+          cd `find ./release -type d -name "tce-linux-amd64-*" | xargs -n1 echo -n`
+          SILENT_MODE=true ALLOW_INSTALL_AS_ROOT=true ./install.sh
+  teardown-runner:
+    name: Stop self-hosted EC2 runner
+    needs:
+      - setup-runner # required to get output from the setup-runner job
+      - build-release # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stop EC2 runner
+        id: stop-ec2-runner
+        shell: bash
+        run: |
+          echo "GITHUB_RUN_ID: ${GITHUB_RUN_ID}"
+          echo "GITHUB_RUN_NUMBER: ${GITHUB_RUN_NUMBER}"
+          echo "GITHUB_RUN_ATTEMPT: ${GITHUB_RUN_ATTEMPT}"
+          INSTANCE_NAME="id-${GITHUB_RUN_ID}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}"
+          echo "INSTANCE_NAME: ${INSTANCE_NAME}"

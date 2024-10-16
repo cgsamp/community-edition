@@ -4,7 +4,7 @@
 package harbor_test
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -24,14 +24,14 @@ var _ = Describe("Harbor Ytt Templates", func() {
 		configDir = filepath.Join(repo.RootDir(), "addons/packages/harbor/2.3.3/bundle/config")
 
 		ValuesFromFile = func(filename string) string {
-			data, err := ioutil.ReadFile(filepath.Join(repo.RootDir(), "addons/packages/harbor/2.3.3/test/unittest/fixtures/values", filename))
+			data, err := os.ReadFile(filepath.Join(repo.RootDir(), "addons/packages/harbor/2.3.3/test/unittest/fixtures/values", filename))
 			Expect(err).NotTo(HaveOccurred())
 
 			return string(data)
 		}
 
 		ExpectOutputEqualToFile = func(filename string) {
-			data, err := ioutil.ReadFile(filepath.Join(repo.RootDir(), "addons/packages/harbor/2.3.3/test/unittest/fixtures/expected", filename))
+			data, err := os.ReadFile(filepath.Join(repo.RootDir(), "addons/packages/harbor/2.3.3/test/unittest/fixtures/expected", filename))
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(output).To(BeEquivalentTo(string(data)))
@@ -131,6 +131,39 @@ var _ = Describe("Harbor Ytt Templates", func() {
 		It("renders with a HTTPProxy timeoutPolicy configuration", func() {
 			Expect(err).NotTo(HaveOccurred())
 			ExpectOutputEqualToFile("httpproxy-timeout.yaml")
+		})
+	})
+
+	Context("configuring ipFamilies with IPv4 only", func() {
+		BeforeEach(func() {
+			values = ValuesFromFile("ipv4-only.yaml")
+		})
+
+		It("renders with a ipFamilies with IPv4 only", func() {
+			Expect(err).NotTo(HaveOccurred())
+			ExpectOutputEqualToFile("ipv4-only.yaml")
+		})
+	})
+
+	Context("configuring ipFamilies with IPv6 only", func() {
+		BeforeEach(func() {
+			values = ValuesFromFile("ipv6-only.yaml")
+		})
+
+		It("renders with a ipFamilies with IPv6 only", func() {
+			Expect(err).NotTo(HaveOccurred())
+			ExpectOutputEqualToFile("ipv6-only.yaml")
+		})
+	})
+
+	Context("configuring ipFamilies with both IPv4 and IPv6, same as default", func() {
+		BeforeEach(func() {
+			values = ValuesFromFile("ipv4-and-ipv6.yaml")
+		})
+
+		It("renders with a ipFamilies with both IPv4 and IPv6, same as default", func() {
+			Expect(err).NotTo(HaveOccurred())
+			ExpectOutputEqualToFile("ipv4-and-ipv6.yaml")
 		})
 	})
 })

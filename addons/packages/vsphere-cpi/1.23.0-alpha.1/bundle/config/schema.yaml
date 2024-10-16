@@ -3,6 +3,24 @@
 #@data/values-schema
 #@schema/desc "OpenAPIv3 Schema for vsphere-cpi"
 ---
+#@schema/desc "NodeSelector configuration applied to all the deployments"
+#@schema/type any=True
+nodeSelector:
+deployment:
+  #@schema/desc "Update strategy of deployments"
+  #@schema/nullable
+  updateStrategy: ""
+  rollingUpdate:
+    #@schema/desc "The maxUnavailable of rollingUpdate. Applied only if RollingUpdate is used as updateStrategy"
+    #@schema/nullable
+    maxUnavailable: 1
+    #@schema/desc "The maxSurge of rollingUpdate. Applied only if RollingUpdate is used as updateStrategy"
+    #@schema/nullable
+    maxSurge: 0
+daemonset:
+  #@schema/desc "Update strategy of daemonsets"
+  #@schema/nullable
+  updateStrategy: ""
 #@schema/desc "Configurations for vsphere-cpi"
 vsphereCPI:
   #@schema/desc "The vSphere mode. Either vsphereCPI or vsphereParavirtualCPI. Default value is vsphereCPI"
@@ -34,10 +52,10 @@ vsphereCPI:
   #@schema/desc "External VM network name"
   #@schema/nullable
   vmExternalNetwork: ""
-  #@schema/desc "Internal VM network cidr to be excluded."
+  #@schema/desc "Comma separated list of internal network subnets to exclude from node IP selection."
   #@schema/nullable
   vmExcludeInternalNetworkSubnetCidr: ""
-  #@schema/desc "External VM network cidr to be excluded."
+  #@schema/desc "Comma separated list of external network subnets to exclude from node IP selection."
   #@schema/nullable
   vmExcludeExternalNetworkSubnetCidr: ""
   #@schema/desc "Extra arguments for the cloud-provider-vsphere."
@@ -59,10 +77,14 @@ vsphereCPI:
     #@schema/desc "The NSX-T server"
     #@schema/nullable
     host: ""
-    #@schema/desc "InsecureFlag is to be set to true if NSX-T uses self-signed cert"
-    insecureFlag: false
-    #@schema/desc "RemoteAuth is to be set to true if NSX-T uses remote authentication (authentication done through the vIDM)"
-    remoteAuth: false
+    #@schema/desc "(Deprecated. For backward compatibiility. Will be replaced by insecure. If both set, result is insecureFlag || insecure) InsecureFlag is to be set to true if NSX-T uses self-signed cert"
+    insecureFlag: "false"
+    #@schema/desc "(Deprecated. For backward compatibiility. Will be replaced by removeAuthEnabled. If both set, result is remoteAuth || remoteAuthEnabled). RemoteAuth is to be set to true if NSX-T uses remote authentication (authentication done through the vIDM)"
+    remoteAuth: "false"
+    #@schema/desc "Insecure is to be set to true if NSX-T uses self-signed cert"
+    insecure: false
+    #@schema/desc "RemoteAuthEnabled is to be set to true if NSX-T uses remote authentication (authentication done through the vIDM)"
+    remoteAuthEnabled: false
     #@schema/desc "VMCAccessToken is VMC access token for token based authentification"
     vmcAccessToken: ""
     #@schema/desc "VMCAuthHost is VMC verification host for token based authentification"
@@ -95,3 +117,15 @@ vsphereCPI:
   supervisorMasterEndpointIP: ""
   #@schema/desc "Used in vsphereParavirtual mode, the endpoint port of supervisor cluster's API server port. Default: ''"
   supervisorMasterPort: ""
+  #@schema/desc "Enable pod routing with Antrea NSX"
+  antreaNSXPodRoutingEnabled: false
+  #! Deprecated. Kept for backward compatibility
+  image:
+    #@schema/desc "The repository of CPI image"
+    repository: ""
+    #@schema/desc "The path of image"
+    path: ""
+    #@schema/desc "The image tag"
+    tag: ""
+    #@schema/desc "The pull policy of image"
+    pullPolicy: ""

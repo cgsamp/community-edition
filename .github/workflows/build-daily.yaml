@@ -1,11 +1,11 @@
 name: Build - Daily Official Build
 
-on:
-  workflow_dispatch:
-  repository_dispatch:
-    types: [manual-daily-build]
-  schedule:
-    - cron: "0 9 * * *"
+# on:
+#  workflow_dispatch:
+#  repository_dispatch:
+#    types: [manual-daily-build]
+#  schedule:
+#    - cron: "0 9 * * *"
 
 jobs:
   setup-runner:
